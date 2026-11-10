@@ -16,7 +16,7 @@ else
 
     while (opcion != "6")
     {
-        Console.WriteLine("===== ACB 25-26 =====");
+        Console.WriteLine("ACB 25-26:");
         Console.WriteLine("1. Ver resultados de un equipo");
         Console.WriteLine("2. Ver resultados de una jornada");
         Console.WriteLine("3. Ver Top 3 MVP");
@@ -89,10 +89,7 @@ else
     }
 }
 
-// ============================================================
-//  FUNCIONES
-// ============================================================
-
+// FUNCIONES
 // Devuelve true si el fichero CSV existe en la ruta indicada
 bool ComprobarRutaCSV(string ruta)
 {
@@ -125,7 +122,6 @@ List<string> ObtenerEquipos(string[] lineas)
     {
         string[] datos = SepararCamposCSV(lineas[i]);
 
-        // datos[1] = equipo local, datos[2] = equipo visitante
         if (!equipos.Contains(datos[1]))
         {
             equipos.Add(datos[1]);
@@ -171,8 +167,7 @@ void ObtenerMVPs(string[] lineas, List<string> jugadores, List<int> apariciones)
 
         int posicion = jugadores.IndexOf(jugador);
 
-        // Si el jugador no estaba en la lista se añade con 1 aparición,
-        // y si ya estaba se le suma una
+        // Si el jugador no estaba en la lista se añade con 1 aparición, y si ya estaba se le suma una
         if (posicion == -1)
         {
             jugadores.Add(jugador);
@@ -185,10 +180,8 @@ void ObtenerMVPs(string[] lineas, List<string> jugadores, List<int> apariciones)
     }
 }
 
-// Rellena las listas paralelas de victorias, derrotas y diferencia de puntos
-// de cada equipo (la posición coincide con la de la lista "equipos")
-void ObtenerClasificacion(string[] lineas, List<string> equipos,
-    List<int> victorias, List<int> derrotas, List<int> diferencias)
+// Rellena las listas paralelas de victorias, derrotas y diferencia de puntos de cada equipo (la posición coincide con la de la lista equipos)
+void ObtenerClasificacion(string[] lineas, List<string> equipos, List<int> victorias, List<int> derrotas, List<int> diferencias)
 {
     // Todos los equipos empiezan con 0
     for (int i = 0; i < equipos.Count; i++)
@@ -205,7 +198,7 @@ void ObtenerClasificacion(string[] lineas, List<string> equipos,
         string equipoLocal = datos[1];
         string equipoVisitante = datos[2];
 
-        // El resultado viene como "79-69": local-visitante
+        // El resultado viene primero local luego visitante, separados por un -
         string[] marcador = datos[3].Split("-");
 
         int puntosLocal = int.Parse(marcador[0]);
@@ -233,7 +226,7 @@ void ObtenerClasificacion(string[] lineas, List<string> equipos,
 }
 
 // Pregunta al usuario en qué carpeta quiere guardar los ficheros.
-// Si pulsa Enter se usa la carpeta actual. Si la carpeta no existe, vuelve a preguntar.
+// Si no pones nada se usa la carpeta actual. Si la carpeta no existe, vuelve a preguntar.
 string PedirCarpetaDestino()
 {
     string carpeta = "";
@@ -241,9 +234,9 @@ string PedirCarpetaDestino()
 
     while (!carpetaValida)
     {
-        Console.Write("Indique la carpeta donde guardar (Enter = carpeta actual): ");
+        Console.Write("Indique la carpeta donde guardar (si no pones nada se guarda en la carpeta actual): ");
 
-        // Se quitan espacios y comillas (Windows pone comillas al copiar una ruta)
+        // Se quitan espacios y comillas (se ponen por defecto al poner una ruta)
         carpeta = (Console.ReadLine() ?? string.Empty).Trim().Trim('"');
 
         if (carpeta == string.Empty)
@@ -398,8 +391,7 @@ void MostrarResultadosEquipo(string[] lineas)
         }
         else
         {
-            // Si el usuario escribe letras, TryParse deja opcionEquipo en 0 y el while
-            // terminaría sin avisar. Se pone en -1 para que vuelva a preguntar.
+            // Si el usuario escribe letras, TryParse deja opcionEquipo en 0 y el while terminaría sin avisar. Se pone en -1 para que vuelva a preguntar.
             opcionEquipo = -1;
 
             Console.WriteLine();
@@ -452,7 +444,6 @@ void MostrarResultadosJornada(string[] lineas)
             {
                 string[] datos = SepararCamposCSV(lineas[i]);
 
-                // datos[0] = jornada
                 if (datos[0] == jornadaSeleccionada)
                 {
                     string resultado =
@@ -498,7 +489,7 @@ void MostrarTop3MVP(string[] lineas)
 
     List<string> resultados = new List<string>();
 
-    Console.WriteLine("===== TOP 3 MVP =====");
+    Console.WriteLine("TOP 3 MVP:");
     Console.WriteLine();
 
     // "puesto <= jugadores.Count" evita errores si hubiera menos de 3 jugadores
@@ -543,8 +534,8 @@ void MostrarClasificacion(string[] lineas)
 
     List<string> resultados = new List<string>();
 
-    Console.WriteLine("===== CLASIFICACIÓN =====");
-    Console.WriteLine("(En caso de empate a victorias desempata la diferencia de puntos)");
+    Console.WriteLine("CLASIFICACIÓN:");
+    Console.WriteLine("En caso de empate a victorias desempata la diferencia de puntos.");
     Console.WriteLine();
 
     for (int puesto = 1; puesto <= equipos.Count; puesto++)
