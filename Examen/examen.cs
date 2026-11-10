@@ -66,22 +66,47 @@ while (opcion != "6")
     {
         case "1":
             MostrarResultadosEquipo(lineas);
+
+            Console.WriteLine();
+            Console.WriteLine("Pulse una tecla para continuar...");
+            Console.ReadKey();
+
             break;
 
         case "2":
-            Console.WriteLine("Resultados de una jornada");
+            MostrarResultadosJornada(lineas);
+
+            Console.WriteLine();
+            Console.WriteLine("Pulse una tecla para continuar...");
+            Console.ReadKey();
+
             break;
 
         case "3":
-            Console.WriteLine("Top 3 MVP");
+            MostrarTop3MVP(lineas);
+
+            Console.WriteLine();
+            Console.WriteLine("Pulse una tecla para continuar...");
+            Console.ReadKey();
+
             break;
 
         case "4":
-            Console.WriteLine("Clasificación");
+            MostrarClasificacion(lineas);
+
+            Console.WriteLine();
+            Console.WriteLine("Pulse una tecla para continuar...");
+            Console.ReadKey();
+
             break;
 
         case "5":
-            Console.WriteLine("Guardar resultados por equipos");
+            GuardarResultadosTodosEquipos(lineas);
+
+            Console.WriteLine();
+            Console.WriteLine("Pulse una tecla para continuar...");
+            Console.ReadKey();
+
             break;
 
         case "6":
@@ -94,7 +119,6 @@ while (opcion != "6")
     }
 
     Console.WriteLine();
-
 }
 
 bool ComprobarRutaCSV (string ruta)
@@ -153,6 +177,82 @@ List<string> ObtenerEquipos(string[] lineas)
     return equipos;
 }
 
+List<string> ObtenerJornadas(string[] lineas)
+{
+    List<string> jornadas = new List<string>();
+
+    for (int i = 1; i < lineas.Length; i++)
+    {
+        string[] datos = SepararCamposCSV(lineas[i]);
+
+        if (!jornadas.Contains(datos[0]))
+        {
+            jornadas.Add(datos[0]);
+        }
+    }
+
+    return jornadas;
+}
+
+void ObtenerMVPs(string[] lineas, List<string> jugadores, List<int> apariciones)
+{
+    for (int i = 1; i < lineas.Length; i++)
+    {
+        string[] datos = SepararCamposCSV(lineas[i]);
+
+        string jugador = datos[4];
+
+        int posicion = jugadores.IndexOf(jugador);
+
+        if (posicion == -1)
+        {
+            jugadores.Add(jugador);
+            apariciones.Add(1);
+        }
+        else
+        {
+            apariciones[posicion]++;
+        }
+    }
+}
+
+void ObtenerClasificacion(string[] lineas, List<string> equipos,
+    List<int> victorias, List<int> derrotas)
+{
+    for (int i = 0; i < equipos.Count; i++)
+    {
+        victorias.Add(0);
+        derrotas.Add(0);
+    }
+
+    for (int i = 1; i < lineas.Length; i++)
+    {
+        string[] datos = SepararCamposCSV(lineas[i]);
+
+        string equipoLocal = datos[1];
+        string equipoVisitante = datos[2];
+
+        string[] marcador = datos[3].Split("-");
+
+        int puntosLocal = int.Parse(marcador[0]);
+        int puntosVisitante = int.Parse(marcador[1]);
+
+        int posicionLocal = equipos.IndexOf(equipoLocal);
+        int posicionVisitante = equipos.IndexOf(equipoVisitante);
+
+        if (puntosLocal > puntosVisitante)
+        {
+            victorias[posicionLocal]++;
+            derrotas[posicionVisitante]++;
+        }
+        else
+        {
+            victorias[posicionVisitante]++;
+            derrotas[posicionLocal]++;
+        }
+    }
+}
+
 void GuardarEnFichero(List<string> resultados)
 {
     Console.Write("Indique el nombre del fichero: ");
@@ -183,7 +283,7 @@ void MostrarResultadosEquipo(string[] lineas)
 
     while (opcionEquipo != 0)
     {
-        Console.WriteLine("Seleccione un equipo:");
+        Console.WriteLine("Equipos disponibles:");
         Console.WriteLine();
 
         for (int i = 0; i < equipos.Count; i++)
@@ -216,8 +316,8 @@ void MostrarResultadosEquipo(string[] lineas)
             {
                 string[] datos = SepararCamposCSV(lineas[i]);
 
-                if (datos[1] == equipoSeleccionado ||
-                    datos[2] == equipoSeleccionado)
+                if ((datos[1] == equipoSeleccionado) ||
+                    (datos[2] == equipoSeleccionado))
                 {
                     string resultado =
                         $"Jornada: {datos[0]}\n" +
@@ -244,7 +344,7 @@ void MostrarResultadosEquipo(string[] lineas)
 
             string guardar = Console.ReadLine() ?? string.Empty;
 
-            if (guardar.ToUpper() == "1")
+            if (guardar == "1")
             {
                 GuardarEnFichero(resultados);
             }
@@ -258,4 +358,212 @@ void MostrarResultadosEquipo(string[] lineas)
             Console.WriteLine();
         }
     }
+}
+
+void MostrarResultadosJornada(string[] lineas)
+{
+    List<string> jornadas = ObtenerJornadas(lineas);
+
+    int opcionJornada = -1;
+
+    while (opcionJornada != 0)
+    {
+        Console.WriteLine("Jornadas disponibles:");
+        Console.WriteLine();
+
+        for (int i = 0; i < jornadas.Count; i++)
+        {
+            Console.WriteLine($"{i + 1}. {jornadas[i]}");
+        }
+
+        Console.WriteLine("0. Cancelar");
+        Console.WriteLine();
+        Console.Write("Seleccione una opción: ");
+
+        if (int.TryParse(Console.ReadLine(), out opcionJornada) &&
+            opcionJornada >= 0 &&
+            opcionJornada <= jornadas.Count)
+        {
+            if (opcionJornada == 0)
+            {
+                Console.WriteLine("Operación cancelada.");
+                return;
+            }
+
+            string jornadaSeleccionada = jornadas[opcionJornada - 1];
+
+            Console.WriteLine();
+            Console.WriteLine($"Resultados de {jornadaSeleccionada}:");
+            Console.WriteLine();
+
+            List<string> resultados = new List<string>();
+
+            for (int i = 1; i < lineas.Length; i++)
+            {
+                string[] datos = SepararCamposCSV(lineas[i]);
+
+                if (datos[0] == jornadaSeleccionada)
+                {
+                    string resultado =
+                        $"Local: {datos[1]}\n" +
+                        $"Visitante: {datos[2]}\n" +
+                        $"Resultado: {datos[3]}\n" +
+                        $"MVP: {datos[4]}\n" +
+                        $"Puntos MVP: {datos[5]}\n" +
+                        $"Asistencias MVP: {datos[6]}\n" +
+                        $"Rebotes MVP: {datos[7]}\n" +
+                        $"Equipo MVP: {datos[8]}\n" +
+                        " ";
+
+                    Console.WriteLine(resultado);
+
+                    resultados.Add(resultado);
+                }
+            }
+
+            Console.WriteLine();
+            Console.WriteLine("¿Quiere guardar los resultados en un fichero?");
+            Console.WriteLine("1. Sí");
+            Console.WriteLine("2. No");
+
+            string guardar = Console.ReadLine() ?? string.Empty;
+
+            if (guardar == "1")
+            {
+                GuardarEnFichero(resultados);
+            }
+
+            break;
+        }
+        else
+        {
+            Console.WriteLine("Opción no válida.");
+        }
+    }
+}
+
+void MostrarTop3MVP(string[] lineas)
+{
+    List<string> jugadores = new List<string>();
+    List<int> apariciones = new List<int>();
+
+    ObtenerMVPs(lineas, jugadores, apariciones);
+
+    List<string> resultados = new List<string>();
+
+
+    Console.WriteLine("===== TOP 3 MVP =====");
+    Console.WriteLine();
+
+    for (int puesto = 1; puesto <= 3; puesto++)
+    {
+        int mayor = -1;
+        int posicionMayor = -1;
+
+        for (int i = 0; i < apariciones.Count; i++)
+        {
+            if (apariciones[i] > mayor)
+            {
+                mayor = apariciones[i];
+                posicionMayor = i;
+            }
+        }
+
+        string resultado = $"{puesto}. {jugadores[posicionMayor]} - {apariciones[posicionMayor]} veces MVP";
+
+        Console.WriteLine(resultado);
+
+        resultados.Add(resultado);
+
+        apariciones[posicionMayor] = -1;
+    }
+
+    Console.WriteLine();
+    Console.WriteLine("¿Quiere guardar los resultados en un fichero?");
+    Console.WriteLine("1. Sí");
+    Console.WriteLine("2. No");
+    
+    string guardar = Console.ReadLine() ?? string.Empty;
+
+    if (guardar == "1")
+    {
+        GuardarEnFichero(resultados);
+    }
+}
+
+
+
+void MostrarClasificacion(string[] lineas)
+{
+    List<string> equipos = ObtenerEquipos(lineas);
+    List<int> victorias = new List<int>();
+    List<int> derrotas = new List<int>();
+
+    ObtenerClasificacion(lineas, equipos, victorias, derrotas);
+
+    Console.WriteLine("===== CLASIFICACIÓN =====");
+    Console.WriteLine();
+
+    for (int puesto = 1; puesto <= equipos.Count; puesto++)
+    {
+        int mayor = -1;
+        int posicionMayor = -1;
+
+        for (int i = 0; i < victorias.Count; i++)
+        {
+            if (victorias[i] > mayor)
+            {
+                mayor = victorias[i];
+                posicionMayor = i;
+            }
+        }
+
+        Console.WriteLine(
+            $"{puesto}. {equipos[posicionMayor]} - " +
+            $"{victorias[posicionMayor]} victorias - " +
+            $"{derrotas[posicionMayor]} derrotas"
+        );
+
+        victorias[posicionMayor] = -1;
+    }
+}
+
+void GuardarResultadosTodosEquipos(string[] lineas)
+{
+    List<string> equipos = ObtenerEquipos(lineas);
+
+    for (int i = 0; i < equipos.Count; i++)
+    {
+        string equipo = equipos[i];
+
+        List<string> resultados = new List<string>();
+
+        for (int j = 1; j < lineas.Length; j++)
+        {
+            string[] datos = SepararCamposCSV(lineas[j]);
+
+            if (datos[1] == equipo || datos[2] == equipo)
+            {
+                string resultado =
+                    $"Jornada: {datos[0]}\n" +
+                    $"Local: {datos[1]}\n" +
+                    $"Visitante: {datos[2]}\n" +
+                    $"Resultado: {datos[3]}\n" +
+                    $"MVP: {datos[4]}\n" +
+                    $"Puntos MVP: {datos[5]}\n" +
+                    $"Asistencias MVP: {datos[6]}\n" +
+                    $"Rebotes MVP: {datos[7]}\n" +
+                    $"Equipo MVP: {datos[8]}\n" +
+                    " ";
+
+                resultados.Add(resultado);
+            }
+        }
+
+        string nombreFichero = equipo + ".txt";
+
+        File.WriteAllLines(nombreFichero, resultados);
+    }
+
+    Console.WriteLine("Ficheros de todos los equipos creados correctamente.");
 }
